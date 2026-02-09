@@ -406,6 +406,11 @@
                 </div>
                 <div class="contact-form-container">
                     <form class="contact-form" id="contactForm">
+                        <!-- FormSubmit Configuration -->
+                        <input type="hidden" name="_subject" value="New BidGuard Contact Form Submission">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_template" value="table">
+
                         <input type="text" name="name" placeholder="Your Name" required>
                         <input type="email" name="email" placeholder="Your Email" required>
                         <input type="text" name="company" placeholder="Company Name">
@@ -424,6 +429,16 @@
             </div>
         </div>
     </section>
+
+    <!-- Form Notification -->
+    <div id="formNotification" class="form-notification hidden">
+        <div class="notification-content">
+            <span class="notification-icon"></span>
+            <p class="notification-message"></p>
+            <button class="notification-close"
+                onclick="document.getElementById('formNotification').classList.add('hidden')">×</button>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">

@@ -58,28 +58,63 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
-// Contact Form Handling
+// Contact Form Handling with FormSubmit
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
-    contactForm.addEventListener('submit', function (e) {
+    contactForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        // Get form data
-        const formData = new FormData(contactForm);
-        const data = Object.fromEntries(formData);
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
 
-        // Here you would typically send this to your backend
-        console.log('Form submitted:', data);
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
 
-        // Show success message (you can customize this)
-        alert('Thank you for your interest! We\'ll get back to you within 24 hours.');
+        try {
+            const response = await fetch('https://formsubmit.co/hello@bidguardsolutions.com', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
 
-        // Reset form
-        contactForm.reset();
-
-        // In production, you would send this data to your email service
-        // For example, using EmailJS, SendGrid, or your own backend API
+            if (response.ok) {
+                showNotification('success', 'Message sent successfully! We\'ll get back to you within 24 hours.');
+                form.reset();
+            } else {
+                throw new Error('Form submission failed');
+            }
+        } catch (error) {
+            console.error('Form submission error:', error);
+            showNotification('error', 'Oops! Something went wrong. Please email us directly at hello@bidguardsolutions.com');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        }
     });
+}
+
+// Notification Display Function
+function showNotification(type, message) {
+    const notification = document.getElementById('formNotification');
+    const icon = notification.querySelector('.notification-icon');
+    const messageEl = notification.querySelector('.notification-message');
+
+    // Set icon based on type
+    icon.textContent = type === 'success' ? '✓' : '✕';
+    messageEl.textContent = message;
+
+    // Update notification class
+    notification.className = `form-notification ${type}`;
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 5000);
 }
 
 // Intersection Observer for Animations
