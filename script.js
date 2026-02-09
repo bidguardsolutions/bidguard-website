@@ -85,12 +85,30 @@ if (contactForm) {
             if (response.ok) {
                 showNotification('success', 'Message sent successfully! We\'ll get back to you within 24 hours.');
                 form.reset();
+
+                // Track successful form submission
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'form_submit_success', {
+                        'form_name': 'contact_form',
+                        'event_category': 'conversion',
+                        'event_label': 'Contact Form Submission'
+                    });
+                }
             } else {
                 throw new Error('Form submission failed');
             }
         } catch (error) {
             console.error('Form submission error:', error);
             showNotification('error', 'Oops! Something went wrong. Please email us directly at hello@bidguardsolutions.com');
+
+            // Track failed form submission
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'form_submit_error', {
+                    'form_name': 'contact_form',
+                    'event_category': 'error',
+                    'event_label': 'Contact Form Error'
+                });
+            }
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = originalButtonText;
@@ -116,6 +134,74 @@ function showNotification(type, message) {
         notification.classList.add('hidden');
     }, 5000);
 }
+
+// Google Analytics Event Tracking
+if (typeof gtag !== 'undefined') {
+    // Track CTA button clicks
+    document.querySelectorAll('.btn-primary, .btn-secondary, .btn-pricing, .btn-primary-small').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            const buttonText = this.textContent.trim();
+            const section = this.closest('section');
+            const sectionId = section ? section.id || section.className : 'unknown';
+
+            gtag('event', 'cta_click', {
+                'button_text': buttonText,
+                'button_location': sectionId,
+                'event_category': 'engagement',
+                'event_label': buttonText
+            });
+        });
+    });
+
+    // Track form start (first field interaction)
+    const contactFormFields = document.querySelectorAll('#contactForm input, #contactForm select, #contactForm textarea');
+    let formStarted = false;
+    contactFormFields.forEach(field => {
+        field.addEventListener('focus', function () {
+            if (!formStarted) {
+                formStarted = true;
+                gtag('event', 'form_start', {
+                    'form_name': 'contact_form',
+                    'event_category': 'engagement'
+                });
+            }
+        });
+    });
+
+    // Track navigation clicks
+    document.querySelectorAll('.nav-links a, .footer-column a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            const linkText = this.textContent.trim();
+            const linkHref = this.getAttribute('href');
+
+            gtag('event', 'navigation_click', {
+                'link_text': linkText,
+                'link_url': linkHref,
+                'event_category': 'navigation'
+            });
+        });
+    });
+
+    // Track scroll depth
+    let scrollDepths = [25, 50, 75, 100];
+    let trackedDepths = [];
+
+    window.addEventListener('scroll', function () {
+        const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+
+        scrollDepths.forEach(depth => {
+            if (scrollPercent >= depth && !trackedDepths.includes(depth)) {
+                trackedDepths.push(depth);
+                gtag('event', 'scroll', {
+                    'event_category': 'engagement',
+                    'event_label': depth + '%',
+                    'value': depth
+                });
+            }
+        });
+    });
+}
+
 
 // Intersection Observer for Animations
 const observerOptions = {
